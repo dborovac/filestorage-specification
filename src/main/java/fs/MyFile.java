@@ -1,6 +1,6 @@
 package fs;
 
-public class File {
+public class MyFile {
     private String fileName;
     private String date;
     private String lastModified;
@@ -8,7 +8,7 @@ public class File {
     private boolean isDirectory;
     private String type;
 
-    public File(String fileName, String date, String lastModified, boolean isFile, boolean isDirectory) {
+    public MyFile(String fileName, String date, String lastModified, boolean isFile, boolean isDirectory) {
         this.fileName = fileName;
         this.date = date;
         this.lastModified = lastModified;

@@ -30,6 +30,10 @@ public abstract class FileStorage {
         }
     }
 
+    public final void cd(String path) {
+
+    }
+
     public final void logout() {
         if (userManager.getCurrentUser() != null) {
             userManager.logout();
@@ -38,35 +42,35 @@ public abstract class FileStorage {
 
     public final List<String> ls() {
         if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().map(File::toString).collect(Collectors.toList());
+            return ls(this.currentPath).stream().map(MyFile::toString).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     public final List<String> lsFiles() {
         if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(File::isFile).map(File::toString).collect(Collectors.toList());
+            return ls(this.currentPath).stream().filter(MyFile::isFile).map(MyFile::toString).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     public final List<String> lsDirectories() {
         if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(File::isDirectory).map(File::toString).collect(Collectors.toList());
+            return ls(this.currentPath).stream().filter(MyFile::isDirectory).map(MyFile::toString).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     public final List<String> lsByType(String type) {
         if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(file -> file.getType().equals(type)).map(File::toString).collect(Collectors.toList());
+            return ls(this.currentPath).stream().filter(file -> file.getType().equals(type)).map(MyFile::toString).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     public final List<String> lsSortedByName(String path, SortOrder order) {
         if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().sorted(Comparator.comparing(File::getFileName)).map(File::toString).collect(Collectors.toList());
+            return ls(this.currentPath).stream().sorted(Comparator.comparing(MyFile::getFileName)).map(MyFile::toString).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -85,6 +89,6 @@ public abstract class FileStorage {
 
     abstract protected boolean isStorage(String path);
 
-    abstract protected List<File> ls(String path);
+    abstract protected List<MyFile> ls(String path);
 
 }
