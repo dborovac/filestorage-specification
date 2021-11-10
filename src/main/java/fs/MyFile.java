@@ -8,12 +8,13 @@ public class MyFile {
     private boolean isDirectory;
     private String type;
 
-    public MyFile(String fileName, String date, String lastModified, boolean isFile, boolean isDirectory) {
+    public MyFile(String fileName, String date, String lastModified, boolean isFile, boolean isDirectory, String type) {
         this.fileName = fileName;
         this.date = date;
         this.lastModified = lastModified;
         this.isFile = isFile;
         this.isDirectory = isDirectory;
+        this.type = type;
     }
 
     @Override

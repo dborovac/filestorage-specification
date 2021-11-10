@@ -1,94 +1,140 @@
 package fs;
 
+import exceptions.InsufficientPrivilegesException;
+import exceptions.NoUserFoundException;
+import exceptions.NotStorageException;
+import user.PrivilegeTypes;
 import user.UserManager;
+import utils.PatternParser;
 import utils.SortOrder;
-import utils.UserInput;
-
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public abstract class FileStorage {
-    protected UserManager userManager;
     protected String currentPath;
+    private UserManager userManager;
 
-    public final void init(String path) {
-        if (!isStorage(currentPath)) {
-            this.currentPath = path;
-            String credentials = UserInput.inputUsernameAndPassword();
-            userManager.registerAndLogin(credentials);
-            connect();
-        }
+    public final void init(String path, String credentials) {
+        currentPath = path;
+        init();
+        userManager = getCurrentStorage().getUserManager();
+        userManager.registerAndLogin(credentials);
+        addUserToJson(credentials, PrivilegeTypes.GodMode);
     }
 
-    public final void login(String path) {
-        String credentials = UserInput.inputUsernameAndPassword();
-        if (isStorage(path) && authenticate(path) && userManager.login(credentials)) {
-            this.currentPath = path;
-            connect();
+    public final void login(String path, String credentials) {
+        if (!isStorage(path)) {
+            throw new NotStorageException();
         }
+        UserManager oldUserManager = null;
+        if (getCurrentStorage() != null) oldUserManager = getCurrentStorage().getUserManager();
+        connect(path);
+        userManager = getCurrentStorage().getUserManager();
+        if (!userManager.login(credentials) || !authenticate(path)) {
+            disconnect();
+            userManager = oldUserManager;
+            throw new NoUserFoundException();
+        }
+        currentPath = path;
     }
 
-    public final void cd(String path) {
-
+    public final void addUser(String credentials, PrivilegeTypes privileges) {
+        if (!userManager.getCurrentUser().getPrivileges().isGod()) {
+            throw new InsufficientPrivilegesException();
+        }
+        userManager.addUser(credentials, privileges);
+        addUserToJson(credentials, privileges);
     }
 
     public final void logout() {
         if (userManager.getCurrentUser() != null) {
             userManager.logout();
+            disconnect();
         }
     }
 
-    public final List<String> ls() {
-        if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().map(MyFile::toString).collect(Collectors.toList());
+    public final List<MyFile> ls() {
+        if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
+            throw new InsufficientPrivilegesException();
         }
-        return Collections.emptyList();
+        return ls(this.currentPath);
     }
 
-    public final List<String> lsFiles() {
-        if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(MyFile::isFile).map(MyFile::toString).collect(Collectors.toList());
+    public final List<MyFile> lsFiles() {
+        return lsFiltered(MyFile::isFile);
+    }
+
+    public final List<MyFile> lsDirectories() {
+        return lsFiltered(MyFile::isDirectory);
+    }
+
+    public final List<MyFile> lsByType(String type) {
+        return lsFiltered(file -> file.getType().equals(type));
+    }
+
+    private List<MyFile> lsFiltered(Predicate<MyFile> predicate) {
+        if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
+            throw new InsufficientPrivilegesException();
         }
-        return Collections.emptyList();
+        return ls(this.currentPath).stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
-    public final List<String> lsDirectories() {
-        if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(MyFile::isDirectory).map(MyFile::toString).collect(Collectors.toList());
+    public final List<MyFile> lsSortedByName(SortOrder order) {
+        return lsSorted(order, Comparator.comparing(MyFile::getFileName));
+    }
+
+    public final List<MyFile> lsSortedByDate(SortOrder order) {
+        return lsSorted(order, Comparator.comparing(MyFile::getDate));
+    }
+
+    public final List<MyFile> lsSortedByLastModified(SortOrder order) {
+        return lsSorted(order, Comparator.comparing(MyFile::getLastModified));
+    }
+
+    private List<MyFile> lsSorted(SortOrder order, Comparator<MyFile> comparing) {
+        if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
+            throw new InsufficientPrivilegesException();
         }
-        return Collections.emptyList();
-    }
-
-    public final List<String> lsByType(String type) {
-        if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().filter(file -> file.getType().equals(type)).map(MyFile::toString).collect(Collectors.toList());
+        if (order == SortOrder.DESC) {
+            return ls(this.currentPath).stream()
+                    .sorted(comparing.reversed())
+                    .collect(Collectors.toList());
         }
-        return Collections.emptyList();
+        return ls(this.currentPath).stream()
+                .sorted(comparing)
+                .collect(Collectors.toList());
     }
 
-    public final List<String> lsSortedByName(String path, SortOrder order) {
-        if (userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            return ls(this.currentPath).stream().sorted(Comparator.comparing(MyFile::getFileName)).map(MyFile::toString).collect(Collectors.toList());
+    public final void makeFiles(String pattern, String path) {
+        List<String> fileNames = PatternParser.parse(pattern);
+        if (!fileNames.isEmpty() && fileNames.get(0).equals("mkdir")) {
+            fileNames.remove(0);
+            makeFiles(path, fileNames, true);
+        } else {
+            fileNames.remove(0);
+            makeFiles(path, fileNames, false);
         }
-        return Collections.emptyList();
     }
 
-    public final List<String> lsSortedByDate(String path, SortOrder order) {
-        return null;
-    }
+    abstract protected void init();
 
-    public final List<String> lsSortedByLastModified(String path, SortOrder order) {
-        return null;
-    }
+    abstract protected void connect(String path);
 
-    abstract protected void connect();
+    abstract protected void disconnect();
+
+    abstract protected Storage getCurrentStorage();
 
     abstract protected boolean authenticate(String path);
 
     abstract protected boolean isStorage(String path);
 
+    abstract protected void addUserToJson(String credentials, PrivilegeTypes privileges);
+
     abstract protected List<MyFile> ls(String path);
 
+    abstract protected void makeFiles(String path, List<String> names, boolean isDirectory);
 }
