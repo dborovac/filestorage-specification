@@ -1,7 +1,11 @@
 package exceptions;
 
-public class NoUserFoundException extends RuntimeException {
+public class NoUserFoundException extends FileStorageException {
+    public NoUserFoundException(String message) {
+        super("Greska prilokom logovanja. Proverite korisnicko ime i/ili lozinku." + message);
+    }
+
     public NoUserFoundException() {
-        super("Greska prilikom logovanja. Proverite korisnicko ime i lozinku.");
+        super("Greska prilokom logovanja. Proverite korisnicko ime i/ili lozinku.");
     }
 }

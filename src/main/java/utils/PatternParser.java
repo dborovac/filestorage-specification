@@ -11,10 +11,10 @@ public class PatternParser {
         List<String> out = new ArrayList<>();
         String[] elements = pattern.split(" ");
         if (elements.length < 2) {
-            throw new ParseException();
+            throw new ParseException("Sablon mora biti u obliku mkdir/mkfile ime. Sablon: " + pattern);
         }
         if (!elements[0].equals("mkdir") && !elements[0].equals("mkfile")) {
-            throw new ParseException();
+            throw new ParseException("Sablon mora poceti sa mkdir ili mkfile. Sablon: " + pattern);
         } else {
             out.add(elements[0]);
         }
@@ -53,7 +53,7 @@ public class PatternParser {
         String range = element.substring(name.length() + 1, element.length() - 1);
         int left = Integer.parseInt(range.split("\\.+")[0]);
         int right = Integer.parseInt(range.split("\\.+")[1]);
-        if (left > right) throw new ParseException();
+        if (left > right) throw new ParseException("Levi broj u opsegu mora biti manji ili jednak desnom broju. " + left + ">" + right);
         for (int i = left; i <= right; i++) {
             out.add(name.concat(String.valueOf(i)));
         }

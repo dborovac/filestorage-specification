@@ -1,12 +1,15 @@
 package fs;
 
 import exceptions.InsufficientPrivilegesException;
+import exceptions.NoFileFoundException;
 import exceptions.NoUserFoundException;
 import exceptions.NotStorageException;
+import exceptions.UnsupportedOperationException;
 import user.PrivilegeTypes;
 import user.UserManager;
 import utils.PatternParser;
 import utils.SortOrder;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
@@ -26,7 +29,7 @@ public abstract class FileStorage {
 
     public final void login(String path, String credentials) {
         if (!isStorage(path)) {
-            throw new NotStorageException();
+            throw new NotStorageException("Putanja: " + path);
         }
         UserManager oldUserManager = null;
         if (getCurrentStorage() != null) oldUserManager = getCurrentStorage().getUserManager();
@@ -42,7 +45,7 @@ public abstract class FileStorage {
 
     public final void addUser(String credentials, PrivilegeTypes privileges) {
         if (!userManager.getCurrentUser().getPrivileges().isGod()) {
-            throw new InsufficientPrivilegesException();
+            throw new InsufficientPrivilegesException("Niste vlasnik ovog skladista.");
         }
         userManager.addUser(credentials, privileges);
         addUserToJson(credentials, privileges);
@@ -57,7 +60,7 @@ public abstract class FileStorage {
 
     public final List<MyFile> ls() {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            throw new InsufficientPrivilegesException();
+            throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
         return ls(this.currentPath);
     }
@@ -76,7 +79,7 @@ public abstract class FileStorage {
 
     private List<MyFile> lsFiltered(Predicate<MyFile> predicate) {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            throw new InsufficientPrivilegesException();
+            throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
         return ls(this.currentPath).stream()
                 .filter(predicate)
@@ -97,7 +100,7 @@ public abstract class FileStorage {
 
     private List<MyFile> lsSorted(SortOrder order, Comparator<MyFile> comparing) {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
-            throw new InsufficientPrivilegesException();
+            throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
         if (order == SortOrder.DESC) {
             return ls(this.currentPath).stream()
@@ -110,6 +113,9 @@ public abstract class FileStorage {
     }
 
     public final void makeFiles(String pattern, String path) {
+        if (!userManager.getCurrentUser().getPrivileges().hasWritePrivilege()) {
+            throw new InsufficientPrivilegesException("Nemate privilegiju za pisanje.");
+        }
         List<String> fileNames = PatternParser.parse(pattern);
         if (!fileNames.isEmpty() && fileNames.get(0).equals("mkdir")) {
             fileNames.remove(0);
@@ -118,6 +124,20 @@ public abstract class FileStorage {
             fileNames.remove(0);
             makeFiles(path, fileNames, false);
         }
+    }
+
+    public final void deleteFile(String path) {
+        if (!userManager.getCurrentUser().getPrivileges().hasDeletePrivilege()) {
+            throw new InsufficientPrivilegesException("Nemate privilegiju za brisanje.");
+        }
+        removeFile(path);
+    }
+
+    public final void downloadFile(String path) {
+        if (!userManager.getCurrentUser().getPrivileges().hasDownloadPrivilege()) {
+            throw new InsufficientPrivilegesException("Nemate privilegiju za preuzimanje.");
+        }
+        getFile(path);
     }
 
     abstract protected void init();
@@ -137,4 +157,8 @@ public abstract class FileStorage {
     abstract protected List<MyFile> ls(String path);
 
     abstract protected void makeFiles(String path, List<String> names, boolean isDirectory);
+
+    abstract protected void removeFile(String path);
+
+    abstract protected void getFile(String path);
 }
