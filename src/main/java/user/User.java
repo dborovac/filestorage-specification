@@ -1,15 +1,15 @@
 package user;
 
 public class User {
-    private String credentials;
+    private Credentials credentials;
     private Privileges privileges;
 
-    public User(String credentials, Privileges privileges) {
+    public User(Credentials credentials, Privileges privileges) {
         this.credentials = credentials;
         this.privileges = privileges;
     }
 
-    public String getCredentials() {
+    public Credentials getCredentials() {
         return credentials;
     }
 

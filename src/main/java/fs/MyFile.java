@@ -17,6 +17,13 @@ public class MyFile {
         this.type = type;
     }
 
+    public MyFile(String fileName, boolean isFile, String type) {
+        this.fileName = fileName;
+        this.isFile = isFile;
+        this.isDirectory = !isFile;
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return fileName + " " + date + " " + lastModified;

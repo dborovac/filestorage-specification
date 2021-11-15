@@ -9,7 +9,7 @@ public class UserManager {
     private final List<User> users = new ArrayList<>();
     private User currentUser;
 
-    public void registerAndLogin(String credentials) {
+    public void registerAndLogin(Credentials credentials) {
         User user = new User(credentials, new Privileges(PrivilegeTypes.GodMode));
         this.currentUser = user;
         users.add(user);
@@ -19,7 +19,7 @@ public class UserManager {
         this.currentUser = null;
     }
 
-    public boolean login(String credentials) throws NoUserFoundException {
+    public boolean login(Credentials credentials) throws NoUserFoundException {
         for (User user : users) {
             if (user.getCredentials().equals(credentials)) {
                 this.currentUser = user;
@@ -29,9 +29,15 @@ public class UserManager {
         throw new NoUserFoundException();
     }
 
-    public void addUser(String credentials, PrivilegeTypes privileges) {
-        User user = new User(credentials, new Privileges(privileges));
-        this.users.add(user);
+    public boolean addUser(Credentials credentials, Privileges privileges) {
+        User user = new User(credentials, privileges);
+        for (User aUser : users) {
+            if (aUser.getCredentials().equals(credentials)) {
+                return false;
+            }
+        }
+        users.add(user);
+        return true;
     }
 
     public User getCurrentUser() {
@@ -42,7 +48,7 @@ public class UserManager {
         return users;
     }
 
-    public User findUser(String credentials, PrivilegeTypes privileges) throws NoUserFoundException {
+    public User findUser(Credentials credentials, PrivilegeTypes privileges) throws NoUserFoundException {
         for (User user : users) {
             if (user.getCredentials().equals(credentials) && user.getPrivileges().getType().equals(privileges)) {
                 return user;
