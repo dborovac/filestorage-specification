@@ -6,7 +6,6 @@ import user.Privileges;
 import user.UserManager;
 import utils.PatternParser;
 import utils.SortOrder;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -35,7 +34,7 @@ public abstract class FileStorage {
         this.userManager = getCurrentStorage().getUserManager();
         if (!userManager.login(credentials)) {
             disconnect();
-            userManager = oldUserManager;
+            this.userManager = oldUserManager;
             throw new NoUserFoundException();
         }
         if (!isStorage(path)) {
@@ -134,8 +133,8 @@ public abstract class FileStorage {
             if (!myFiles.isEmpty()) makeFiles(path, myFiles);
             throw new ExtensionNotAllowedException(restrictedExtensions.toString());
         }
-        StorageConfiguration currentStorageConfiguraton = getCurrentStorage().getStorageConfiguration();
-        int maxFilesPerFolder = currentStorageConfiguraton.getMaxFilesPerFolder().getOrDefault(path, 999);
+        StorageConfiguration currentStorageConfiguration = getCurrentStorage().getStorageConfiguration();
+        int maxFilesPerFolder = currentStorageConfiguration.getMaxFilesPerFolder().getOrDefault(path, 999);
         int currentNumberOfFiles = getNumberOfFilesInDirectory(path);
         if (currentNumberOfFiles + myFiles.size() > maxFilesPerFolder) {
             throw new FileCountLimitException("Maksimalan broj fajlova u ovom folderu je: " + maxFilesPerFolder);

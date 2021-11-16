@@ -3,7 +3,7 @@ package fs;
 import java.util.*;
 
 public class StorageConfiguration {
-    private int maxSize;
+    private long maxSize;
     private List<String> restrictedTypes;
     private Map<String, Integer> maxFilesPerFolder;
 
@@ -19,11 +19,11 @@ public class StorageConfiguration {
         this.maxFilesPerFolder = new HashMap<>();
     }
 
-    public int getMaxSize() {
+    public long getMaxSize() {
         return maxSize;
     }
 
-    public void setMaxSize(int maxSize) {
+    public void setMaxSize(long maxSize) {
         this.maxSize = maxSize;
     }
 
