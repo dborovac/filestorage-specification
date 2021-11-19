@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.Random;
 
 public class PatternParser {
+
+    /**
+     * Tries to parse a pattern and return the corresponding list of {@code MyFile}s'
+     * @param pattern the pattern.
+     * @return the list of {@code MyFile}s'.
+     * @throws ParseException if the pattern is invalid.
+     */
     public static List<MyFile> parse(String pattern) throws ParseException {
         List<MyFile> out = new ArrayList<>();
         String[] elements = pattern.split(" ");

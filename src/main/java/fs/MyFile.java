@@ -1,12 +1,16 @@
 package fs;
 
+/**
+ * <h1>This class represents an abstract file with attributes that are shared for files across all platforms and environments.</h1>
+ */
+
 public class MyFile {
-    private String fileName;
+    private final String fileName;
     private String date;
     private String lastModified;
-    private boolean isFile;
-    private boolean isDirectory;
-    private String type;
+    private final boolean isFile;
+    private final boolean isDirectory;
+    private final String type;
 
     public MyFile(String fileName, String date, String lastModified, boolean isFile, boolean isDirectory, String type) {
         this.fileName = fileName;

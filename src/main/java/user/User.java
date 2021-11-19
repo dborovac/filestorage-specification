@@ -1,8 +1,8 @@
 package user;
 
 public class User {
-    private Credentials credentials;
-    private Privileges privileges;
+    private final Credentials credentials;
+    private final Privileges privileges;
 
     public User(Credentials credentials, Privileges privileges) {
         this.credentials = credentials;
