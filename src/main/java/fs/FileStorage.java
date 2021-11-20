@@ -120,7 +120,7 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsAll(String path) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsAll(String path) throws InsufficientPrivilegesException,FileStorageException {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
             throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
@@ -134,7 +134,7 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsFiles(String path) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsFiles(String path) throws InsufficientPrivilegesException,FileStorageException {
         return lsFiltered(path, MyFile::isFile);
     }
 
@@ -145,7 +145,7 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsDirectories(String path) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsDirectories(String path) throws InsufficientPrivilegesException,FileStorageException {
         return lsFiltered(path, MyFile::isDirectory);
     }
 
@@ -157,11 +157,11 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsByType(String path, String type) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsByType(String path, String type) throws InsufficientPrivilegesException,FileStorageException {
         return lsFiltered(path, file -> file.getType().equals(type));
     }
 
-    private List<MyFile> lsFiltered(String path, Predicate<MyFile> predicate) throws InsufficientPrivilegesException {
+    private List<MyFile> lsFiltered(String path, Predicate<MyFile> predicate) throws InsufficientPrivilegesException,FileStorageException {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
             throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
@@ -178,7 +178,7 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsSortedByName(String path, SortOrder order) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsSortedByName(String path, SortOrder order) throws InsufficientPrivilegesException,FileStorageException {
         return lsSorted(path, order, Comparator.comparing(MyFile::getFileName));
     }
 
@@ -190,7 +190,7 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsSortedByDate(String path, SortOrder order) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsSortedByDate(String path, SortOrder order) throws InsufficientPrivilegesException,FileStorageException {
         return lsSorted(path, order, Comparator.comparing(MyFile::getDate));
     }
 
@@ -202,11 +202,11 @@ public abstract class FileStorage {
      * name, created time, modified time, if the file is a directory and its extension.
      * @throws InsufficientPrivilegesException if privileges of the current user are insufficient.
      */
-    public final List<MyFile> lsSortedByLastModified(String path, SortOrder order) throws InsufficientPrivilegesException {
+    public final List<MyFile> lsSortedByLastModified(String path, SortOrder order) throws FileStorageException {
         return lsSorted(path, order, Comparator.comparing(MyFile::getLastModified));
     }
 
-    private List<MyFile> lsSorted(String path, SortOrder order, Comparator<MyFile> comparing) throws InsufficientPrivilegesException {
+    private List<MyFile> lsSorted(String path, SortOrder order, Comparator<MyFile> comparing) throws FileStorageException {
         if (!userManager.getCurrentUser().getPrivileges().hasReadPrivilege()) {
             throw new InsufficientPrivilegesException("Nemate privilegiju za citanje.");
         }
@@ -296,9 +296,9 @@ public abstract class FileStorage {
 
     abstract protected void updateConfigJson();
 
-    abstract protected List<MyFile> ls(String path);
+    abstract protected List<MyFile> ls(String path) throws FileStorageException;
 
-    abstract protected void makeFiles(String path, List<MyFile> names);
+    abstract protected void makeFiles(String path, List<MyFile> names) throws FileStorageException;
 
     abstract protected void removeFile(String path) throws FileStorageException;
 
@@ -306,5 +306,5 @@ public abstract class FileStorage {
 
     abstract protected void move(String source, String destination) throws FileStorageException;
 
-    abstract protected int getNumberOfFilesInDirectory(String path);
+    abstract protected int getNumberOfFilesInDirectory(String path) throws FileStorageException;
 }
